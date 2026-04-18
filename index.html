@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weekly Planner</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f5f5f3;
+        color: #1a1a1a;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+      }
+
+      .app {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1a1a1a;
+        letter-spacing: -0.3px;
+      }
+      .week-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .week-nav button {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #555;
+        transition: background 0.15s;
+      }
+      .week-nav button:hover {
+        background: #eee;
+      }
+      .week-label {
+        font-size: 13px;
+        color: #666;
+        min-width: 130px;
+        text-align: center;
+      }
+
+      /* Goal panel */
+      .goal-panel {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-bottom: 1.25rem;
+      }
+      .goal-panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 12px;
+      }
+      .goal-inputs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .goal-inputs input[type="text"] {
+        flex: 1;
+        min-width: 130px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 8px 11px;
+        background: #fafafa;
+        color: #1a1a1a;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .goal-inputs input[type="text"]:focus {
+        border-color: #1d9e75;
+      }
+      .goal-inputs input[type="number"] {
+        width: 68px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 8px 8px;
+        background: #fafafa;
+        color: #1a1a1a;
+        text-align: center;
+        outline: none;
+      }
+      .goal-inputs input[type="number"]:focus {
+        border-color: #1d9e75;
+      }
+      .goal-inputs select {
+        font-size: 13px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 8px 8px;
+        background: #fafafa;
+        color: #1a1a1a;
+        outline: none;
+        cursor: pointer;
+      }
+      .goal-add-btn {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 16px;
+        border: 1px solid #1d9e75;
+        border-radius: 8px;
+        background: #e1f5ee;
+        color: #0f6e56;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.15s;
+      }
+      .goal-add-btn:hover {
+        background: #9fe1cb;
+      }
+      .goal-list {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .goal-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fafafa;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 8px 12px;
+      }
+      .goal-item-name {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a1a1a;
+      }
+      .goal-item-total {
+        font-size: 12px;
+        color: #888;
+      }
+      .goal-item-daily {
+        font-size: 12px;
+        font-weight: 600;
+        color: #0f6e56;
+        background: #e1f5ee;
+        border-radius: 100px;
+        padding: 2px 9px;
+        white-space: nowrap;
+      }
+      .goal-item-del {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #bbb;
+        font-size: 16px;
+        padding: 0 2px;
+        line-height: 1;
+        transition: color 0.15s;
+      }
+      .goal-item-del:hover {
+        color: #d85a30;
+      }
+
+      /* Stats */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 1rem;
+      }
+      .stat {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        padding: 13px 14px;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: #888;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .stat-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+      .stat-value.good {
+        color: #1d9e75;
+      }
+      .stat-value.warn {
+        color: #ba7517;
+      }
+
+      /* Progress bar */
+      .progress-bar-wrap {
+        background: #e8e8e8;
+        border-radius: 100px;
+        height: 8px;
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        height: 100%;
+        background: #1d9e75;
+        border-radius: 100px;
+        transition: width 0.35s ease;
+      }
+
+      /* Day cards */
+      .days-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .day-card {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 13px 15px;
+        transition: border-color 0.2s;
+      }
+      .day-card.today {
+        border-color: #1d9e75;
+        border-width: 1.5px;
+      }
+      .day-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 9px;
+      }
+      .day-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #888;
+        width: 38px;
+      }
+      .day-name.today {
+        color: #1d9e75;
+      }
+      .day-bar {
+        flex: 1;
+        background: #f0f0f0;
+        border-radius: 100px;
+        height: 5px;
+        overflow: hidden;
+      }
+      .day-bar-fill {
+        height: 100%;
+        background: #1d9e75;
+        border-radius: 100px;
+        transition: width 0.3s;
+      }
+      .day-count {
+        font-size: 12px;
+        color: #999;
+        min-width: 32px;
+        text-align: right;
+      }
+      .result-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 100px;
+      }
+      .result-badge.success {
+        background: #e1f5ee;
+        color: #0f6e56;
+      }
+      .result-badge.warn {
+        background: #faeeda;
+        color: #854f0b;
+      }
+      .result-badge.na {
+        background: #f0f0f0;
+        color: #888;
+      }
+
+      /* Tasks */
+      .tasks-area {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .task-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .task-check {
+        width: 19px;
+        height: 19px;
+        border-radius: 50%;
+        border: 1.5px solid #ccc;
+        background: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .task-check.done {
+        background: #1d9e75;
+        border-color: #1d9e75;
+      }
+      .task-check.done::after {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 9px;
+        border: 2px solid white;
+        border-top: none;
+        border-left: none;
+        transform: rotate(45deg) translateY(-1px);
+      }
+      .task-label {
+        flex: 1;
+        font-size: 13px;
+        color: #1a1a1a;
+      }
+      .task-label.done {
+        text-decoration: line-through;
+        color: #aaa;
+      }
+      .task-tag {
+        font-size: 11px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 100px;
+      }
+      .task-tag.goal {
+        background: #e6f1fb;
+        color: #185fa5;
+      }
+      .task-tag.manual {
+        background: #f0f0f0;
+        color: #888;
+      }
+      .task-del {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #ccc;
+        font-size: 15px;
+        opacity: 0;
+        padding: 0 3px;
+        transition:
+          opacity 0.15s,
+          color 0.15s;
+      }
+      .task-row:hover .task-del {
+        opacity: 1;
+      }
+      .task-del:hover {
+        color: #d85a30;
+      }
+
+      /* Add task row */
+      .add-task-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 7px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 7px;
+      }
+      .add-task-input {
+        flex: 1;
+        font-size: 13px;
+        color: #1a1a1a;
+        background: none;
+        border: none;
+        outline: none;
+      }
+      .add-task-input::placeholder {
+        color: #bbb;
+      }
+      .add-task-btn {
+        font-size: 20px;
+        color: #bbb;
+        background: none;
+        border: none;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.15s;
+      }
+      .add-task-btn:hover {
+        color: #1d9e75;
+      }
+
+      /* Responsive */
+      @media (max-width: 500px) {
+        .stats-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .goal-inputs {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .goal-inputs input[type="number"] {
+          width: 100%;
+        }
+        .goal-add-btn {
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="header">
+        <h1>Weekly Planner</h1>
+        <div class="week-nav">
+          <button id="prevWeek">&#8592;</button>
+          <span class="week-label" id="weekLabel"></span>
+          <button id="nextWeek">&#8594;</button>
+        </div>
+      </div>
+
+      <div class="goal-panel">
+        <div class="goal-panel-title">
+          Set a weekly goal — auto-distributed across 7 days
+        </div>
+        <div class="goal-inputs">
+          <input
+            type="text"
+            id="goalName"
+            placeholder="e.g. Study, Exercise, Reading…"
+          />
+          <input type="number" id="goalAmount" min="1" value="14" />
+          <select id="goalUnit">
+            <option>hours</option>
+            <option>tasks</option>
+            <option>pages</option>
+            <option>km</option>
+            <option>mins</option>
+            <option>sessions</option>
+          </select>
+          <button class="goal-add-btn" id="addGoalBtn">+ Add goal</button>
+        </div>
+        <div class="goal-list" id="goalList"></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">Completed today</div>
+          <div class="stat-value" id="statToday">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Done this week</div>
+          <div class="stat-value" id="statDone">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Week progress</div>
+          <div class="stat-value" id="statPct">0%</div>
+        </div>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div
+          class="progress-bar-fill"
+          id="weekProgress"
+          style="width: 0%"
+        ></div>
+      </div>
+
+      <div class="days-list" id="daysList"></div>
+    </div>
+
+    <script>
+      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const FULL = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      let offset = 0;
+      let state = { goals: [], days: Array.from({ length: 7 }, () => []) };
+
+      function weekKey(o) {
+        const d = new Date();
+        d.setDate(d.getDate() - d.getDay() + o * 7);
+        return `wk_${d.getFullYear()}_${Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / (7 * 864e5))}`;
+      }
+
+      function weekDates(o) {
+        const now = new Date(),
+          sun = new Date(now);
+        sun.setDate(now.getDate() - now.getDay() + o * 7);
+        return Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(sun);
+          d.setDate(sun.getDate() + i);
+          return d;
+        });
+      }
+
+      function sameDay(a, b) {
+        return (
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate()
+        );
+      }
+
+      function load() {
+        const raw = localStorage.getItem(weekKey(offset));
+        if (raw) {
+          try {
+            state = JSON.parse(raw);
+          } catch {
+            resetState();
+          }
+        } else {
+          resetState();
+        }
+        if (!state.goals) state.goals = [];
+        if (!state.days) state.days = Array.from({ length: 7 }, () => []);
+      }
+
+      function resetState() {
+        state = { goals: [], days: Array.from({ length: 7 }, () => []) };
+      }
+
+      function save() {
+        localStorage.setItem(weekKey(offset), JSON.stringify(state));
+      }
+
+      function fmtAmount(val, unit) {
+        const v = parseFloat(val);
+        if (unit === "hours") {
+          if (v < 1) return Math.round(v * 60) + " min";
+          if (v % 1 === 0) return v + "h";
+          return v.toFixed(1) + "h";
+        }
+        return (v % 1 === 0 ? v : v.toFixed(1)) + " " + unit;
+      }
+
+      function renderGoals() {
+        const list = document.getElementById("goalList");
+        list.innerHTML = "";
+        state.goals.forEach((g, i) => {
+          const daily = g.amount / 7;
+          const item = document.createElement("div");
+          item.className = "goal-item";
+          item.innerHTML = `
+        <span class="goal-item-name">${g.name}</span>
+        <span class="goal-item-total">Total: ${fmtAmount(g.amount, g.unit)}</span>
+        <span class="goal-item-daily">${fmtAmount(daily, g.unit)}/day</span>
+        <button class="goal-item-del" title="Remove goal">&#215;</button>
+      `;
+          item.querySelector(".goal-item-del").addEventListener("click", () => {
+            state.goals.splice(i, 1);
+            save();
+            render();
+          });
+          list.appendChild(item);
+        });
+      }
+
+      function allTasks() {
+        let total = 0,
+          done = 0;
+        state.days.forEach((d) => {
+          total += d.length;
+          done += d.filter((t) => t.done).length;
+        });
+        return { total, done };
+      }
+
+      function todayDone() {
+        if (offset !== 0) return 0;
+        const di = new Date().getDay();
+        return (state.days[di] || []).filter((t) => t.done).length;
+      }
+
+      function updateStats() {
+        const { total, done } = allTasks();
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        document.getElementById("statToday").textContent = todayDone();
+        document.getElementById("statDone").textContent = done + "/" + total;
+        document.getElementById("statPct").textContent = pct + "%";
+        document.getElementById("weekProgress").style.width = pct + "%";
+        const cl = pct >= 100 ? "good" : pct > 0 ? "warn" : "";
+        document.getElementById("statPct").className = "stat-value " + cl;
+      }
+
+      function renderDays() {
+        const dates = weekDates(offset),
+          today = new Date();
+        const list = document.getElementById("daysList");
+        list.innerHTML = "";
+
+        dates.forEach((date, di) => {
+          const isToday = sameDay(date, today);
+          const isPast = date < today && !isToday;
+          const tasks = state.days[di] || [];
+          const doneCnt = tasks.filter((t) => t.done).length;
+          const pct =
+            tasks.length > 0 ? Math.round((doneCnt / tasks.length) * 100) : 0;
+
+          let badge = "";
+          if (tasks.length > 0) {
+            if (pct === 100)
+              badge = `<span class="result-badge success">Done</span>`;
+            else if (isPast)
+              badge = `<span class="result-badge warn">${doneCnt}/${tasks.length}</span>`;
+            else
+              badge = `<span class="result-badge na">${doneCnt}/${tasks.length}</span>`;
+          }
+
+          const card = document.createElement("div");
+          card.className = "day-card" + (isToday ? " today" : "");
+          card.innerHTML = `
+        <div class="day-header">
+          <span class="day-name${isToday ? " today" : ""}">${DAYS[di]}</span>
+          <div class="day-bar"><div class="day-bar-fill" style="width:${Math.min(100, pct)}%"></div></div>
+          <span class="day-count">${doneCnt}/${tasks.length}</span>
+          ${badge}
+        </div>
+        <div class="tasks-area" id="ta-${di}"></div>
+        <div class="add-task-row">
+          <input class="add-task-input" id="ai-${di}" placeholder="Add extra task for ${FULL[di]}…">
+          <button class="add-task-btn" data-day="${di}">+</button>
+        </div>
+      `;
+          list.appendChild(card);
+          renderTasksFor(di);
+
+          card.querySelector(`#ai-${di}`).addEventListener("keydown", (e) => {
+            if (e.key === "Enter") addManual(di);
+          });
+          card
+            .querySelector(`.add-task-btn`)
+            .addEventListener("click", () => addManual(di));
+        });
+      }
+
+      function renderTasksFor(di) {
+        const container = document.getElementById(`ta-${di}`);
+        if (!container) return;
+        container.innerHTML = "";
+        (state.days[di] || []).forEach((task, ti) => {
+          const row = document.createElement("div");
+          row.className = "task-row";
+          const tag = task.isGoal
+            ? `<span class="task-tag goal">${task.goalLabel}</span>`
+            : `<span class="task-tag manual">custom</span>`;
+          row.innerHTML = `
+        <button class="task-check${task.done ? " done" : ""}"></button>
+        <span class="task-label${task.done ? " done" : ""}">${task.text}</span>
+        ${tag}
+        <button class="task-del" title="Delete">&#215;</button>
+      `;
+          row
+            .querySelector(".task-check")
+            .addEventListener("click", () => toggle(di, ti));
+          row
+            .querySelector(".task-del")
+            .addEventListener("click", () => del(di, ti));
+          container.appendChild(row);
+        });
+      }
+
+      function addManual(di) {
+        const inp = document.getElementById(`ai-${di}`);
+        const text = inp.value.trim();
+        if (!text) return;
+        if (!state.days[di]) state.days[di] = [];
+        state.days[di].push({ text, done: false, isGoal: false });
+        inp.value = "";
+        save();
+        render();
+      }
+
+      function toggle(di, ti) {
+        state.days[di][ti].done = !state.days[di][ti].done;
+        save();
+        render();
+      }
+
+      function del(di, ti) {
+        state.days[di].splice(ti, 1);
+        save();
+        render();
+      }
+
+      function addGoal() {
+        const name = document.getElementById("goalName").value.trim();
+        const amount = parseFloat(document.getElementById("goalAmount").value);
+        const unit = document.getElementById("goalUnit").value;
+        if (!name || isNaN(amount) || amount <= 0) return;
+        const daily = amount / 7;
+        state.goals.push({ name, amount, unit });
+        for (let di = 0; di < 7; di++) {
+          if (!state.days[di]) state.days[di] = [];
+          state.days[di].push({
+            text: `${name}: ${fmtAmount(daily, unit)}`,
+            done: false,
+            isGoal: true,
+            goalLabel: name,
+          });
+        }
+        document.getElementById("goalName").value = "";
+        document.getElementById("goalAmount").value = "14";
+        save();
+        render();
+      }
+
+      function render() {
+        renderGoals();
+        renderDays();
+        updateStats();
+      }
+
+      function renderWeekLabel() {
+        const dates = weekDates(offset);
+        const fmt = (d) => `${d.getDate()}/${d.getMonth() + 1}`;
+        document.getElementById("weekLabel").textContent =
+          `${fmt(dates[0])} – ${fmt(dates[6])}`;
+      }
+
+      document.getElementById("addGoalBtn").addEventListener("click", addGoal);
+      document.getElementById("goalName").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addGoal();
+      });
+      document.getElementById("prevWeek").addEventListener("click", () => {
+        offset--;
+        load();
+        renderWeekLabel();
+        render();
+      });
+      document.getElementById("nextWeek").addEventListener("click", () => {
+        offset++;
+        load();
+        renderWeekLabel();
+        render();
+      });
+
+      load();
+      renderWeekLabel();
+      render();
+    </script>
+  </body>
+</html>
