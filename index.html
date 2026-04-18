@@ -499,29 +499,29 @@
     </div>
 
     <script>
-      const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const DAYS = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
       const FULL = [
+        "Saturday",
         "Sunday",
         "Monday",
         "Tuesday",
         "Wednesday",
         "Thursday",
         "Friday",
-        "Saturday",
       ];
       let offset = 0;
       let state = { goals: [], days: Array.from({ length: 7 }, () => []) };
 
       function weekKey(o) {
         const d = new Date();
-        d.setDate(d.getDate() - d.getDay() + o * 7);
+        d.setDate(d.getDate() - ((d.getDay() + 1) % 7) + o * 7);
         return `wk_${d.getFullYear()}_${Math.ceil((d - new Date(d.getFullYear(), 0, 1)) / (7 * 864e5))}`;
       }
 
       function weekDates(o) {
         const now = new Date(),
           sun = new Date(now);
-        sun.setDate(now.getDate() - now.getDay() + o * 7);
+        sun.setDate(now.getDate() - ((now.getDay() + 1) % 7) + o * 7);
         return Array.from({ length: 7 }, (_, i) => {
           const d = new Date(sun);
           d.setDate(sun.getDate() + i);
@@ -604,7 +604,7 @@
 
       function todayDone() {
         if (offset !== 0) return 0;
-        const di = new Date().getDay();
+        const di = (new Date().getDay() + 1) % 7;
         return (state.days[di] || []).filter((t) => t.done).length;
       }
 
